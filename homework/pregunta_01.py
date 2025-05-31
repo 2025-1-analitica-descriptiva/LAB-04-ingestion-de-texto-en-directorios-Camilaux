@@ -4,7 +4,11 @@
 """
 Escriba el codigo que ejecute la accion solicitada en cada pregunta.
 """
+import os
+from pathlib import Path
 
+from homework.descomprimir_archivo import descomprimir_archivo
+from homework.save_csv import save_csv
 
 def pregunta_01():
     """
@@ -71,3 +75,45 @@ def pregunta_01():
 
 
     """
+
+    # Descomprimir el archivo input.zip en la carpeta input
+    
+    # Decompress input.zip to the repository root
+    input_zip_path = Path("files/input.zip")
+    output_dir = Path("files/input")
+    if not output_dir.exists():
+        descomprimir_archivo(input_zip_path, output_dir)
+    
+    # Crear la carpeta output si no existe
+    output_dir = Path("files/output")
+    output_dir.mkdir(exist_ok=True)
+    
+    # Inicializar listas para almacenar los datos
+    train_data = []
+    test_data = []
+
+    # Función para procesar los archivos de un directorio
+    def process_directory(directory, dataset):
+        for sentiment in ['positive', 'negative', 'neutral']:
+            sentiment_dir = Path(directory/sentiment)
+            if sentiment_dir.exists():
+                for file_path in sentiment_dir.glob('*.txt'):
+                    with open(file_path, 'r', encoding='utf-8') as file:
+                        phrase = file.read().strip()
+                        dataset.append({'phrase': phrase, 'target': sentiment})
+
+    # Procesar los directorios de entrenamiento y prueba
+    train_dir = Path('files/input/input/train')
+    test_dir = Path('files/input/input/test')
+    if train_dir.exists():
+        process_directory(train_dir, train_data)
+    if test_dir.exists():
+        process_directory(test_dir, test_data)
+
+    # Guardar los datos en archivos CSV 
+
+    return save_csv(output_dir, train_data, test_data)
+
+print(pregunta_01())
+
+
